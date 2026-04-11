@@ -1,57 +1,134 @@
-import { Injectable } from '@nestjs/common';
+// import { Injectable, NotFoundException } from '@nestjs/common';
+// import { CreatePetDto } from './dto/create-pet.dto';
+// import { UpdatePetDto } from './dto/update-pet.dto';
+// import { PrismaService } from 'src/prisma/prisma.service';
+
+// @Injectable()
+// export class PetsService {
+//   constructor(private prisma: PrismaService) {}
+
+//   async getPets(name: string) {
+//     if (name) {
+//       return this.prisma.pet.findMany({ where: { name } });
+//     }
+//     return this.prisma.pet.findMany();
+//   }
+
+//   async getPet(id: number) {
+//     const pet = await this.prisma.pet.findUnique({ where: { id } });
+//     if (!pet) {
+//       throw new NotFoundException('pet not found');
+//     }
+//     return pet;
+//   }
+
+//   async createPet(createPetDto: CreatePetDto) {
+//     return this.prisma.pet.create({
+//       data: {
+//         ...createPetDto,
+//         client: {
+//           connect: { id: createPetDto.clientId },
+//         },
+//       },
+//     });
+//   }
+
+//   async updatePet(id: number, updatePetDto: UpdatePetDto) {
+//     return this.prisma.pet.update({ where: { id }, data: updatePetDto });
+//   }
+
+//   async removePet(id: number) {
+//     const toBeRemoved = await this.getPet(id);
+//     await this.prisma.pet.delete({ where: { id } });
+//     return toBeRemoved;
+//   }
+// }
+
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePetDto } from './dto/create-pet.dto';
 import { UpdatePetDto } from './dto/update-pet.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class PetsService {
-  private pets = [
-    {
-      id: 1,
-      name: 'Cinnamon',
-      age: 2,
-      size: 80,
-      weigth: 15,
-      type: 'cat',
-    },
-  ];
+  constructor(private prisma: PrismaService) {}
 
-  getPets(name: string) {
-    if (name) {
-      return this.pets.filter((pet) => pet.name === name);
-    }
-    return this.pets;
+  async getPets(name?: string) {
+    const where = name
+      ? {
+          name: {
+            contains: name,
+            mode: Prisma.QueryMode.insensitive,
+          },
+        }
+      : {};
+
+    return this.prisma.pet.findMany({
+      where,
+      include: {
+        client: true,
+      },
+    });
   }
 
-  getPet(id: number) {
-    const pet = this.pets.find((pet) => pet.id === id);
+  async getPet(id: number) {
+    const pet = await this.prisma.pet.findUnique({
+      where: { id },
+      include: {
+        client: true,
+      },
+    });
+
     if (!pet) {
-      throw new Error('pet not found');
+      throw new NotFoundException('Pet not found');
     }
+
     return pet;
   }
 
-  createPet(createPetDto: CreatePetDto) {
-    const newPet = {
-      ...createPetDto,
-      id: Date.now(),
-    };
-    this.pets.push(newPet);
-    return newPet;
-  }
+  async createPet(createPetDto: CreatePetDto) {
+    const { clientId, ...petData } = createPetDto;
 
-  updatePet(id: number, updatePetDto: UpdatePetDto) {
-    this.pets = this.pets.map((pet) => {
-      if (pet.id === id) {
-        return { ...pet, ...updatePetDto };
-      }
-      return pet;
+    return this.prisma.pet.create({
+      data: {
+        ...petData,
+        client: {
+          connect: { id: clientId },
+        },
+      },
+      include: {
+        client: true,
+      },
     });
-    return this.getPet(id);
   }
 
-  removePet(id: number) {
-    const toBeRemoved = this.getPet(id);
-    this.pets = this.pets.filter((pet) => pet.id !== id);
-    return toBeRemoved;
+  async updatePet(id: number, updatePetDto: UpdatePetDto) {
+    const { clientId, ...petData } = updatePetDto;
+
+    return this.prisma.pet.update({
+      where: { id },
+      data: {
+        ...petData,
+        ...(clientId && {
+          client: {
+            connect: { id: clientId },
+          },
+        }),
+      },
+      include: {
+        client: true,
+      },
+    });
+  }
+
+  async removePet(id: number) {
+    const pet = await this.getPet(id);
+
+    await this.prisma.pet.delete({
+      where: { id },
+    });
+
+    return pet;
   }
 }

@@ -23,20 +23,14 @@ export class ClientsController {
 
   // GET route to see all clients (/clients) si Query --> /clients?name=bob
   @Get()
-  async getCLients(@Query('name') name: string) {
-    // const service = new ClientsService();
-    return await this.clientsService.getClients(name);
+  async getClients(@Query('query') query?: string) {
+    return this.clientsService.getClients(query);
   }
-
   // GET route to see one client by id (/clients/:id)
   @Get(':id')
   // Pipe allow us to do a custom transformation to the data coming in
   async getOneClient(@Param('id', ParseIntPipe) id: number) {
-    try {
-      return await this.clientsService.getClient(id);
-    } catch (error) {
-      throw new NotFoundException();
-    }
+    return this.clientsService.getClient(id);
   }
 
   //POST route to create client (/clients)

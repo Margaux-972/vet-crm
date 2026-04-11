@@ -20,12 +20,12 @@ export class PetsController {
   constructor(private readonly petsService: PetsService) {}
 
   @Get()
-  getPets(@Query('name') name: string) {
+  async getPets(@Query('name') name: string) {
     return this.petsService.getPets(name);
   }
 
   @Get(':id')
-  getOnePet(@Param('id', ParseIntPipe) id: number) {
+  async getOnePet(@Param('id', ParseIntPipe) id: number) {
     try {
       return this.petsService.getPet(id);
     } catch (error) {
@@ -34,12 +34,12 @@ export class PetsController {
   }
 
   @Post()
-  createClient(@Body(new ValidationPipe()) createPetDto: CreatePetDto) {
+  async createPet(@Body(new ValidationPipe()) createPetDto: CreatePetDto) {
     return this.petsService.createPet(createPetDto);
   }
 
   @Put(':id')
-  updatePet(
+  async updatePet(
     @Param('id', ParseIntPipe) id: number,
     @Body() updatePetDto: UpdatePetDto,
   ) {
@@ -47,7 +47,7 @@ export class PetsController {
   }
 
   @Delete(':id')
-  removePet(@Param('id', ParseIntPipe) id: number) {
+  async removePet(@Param('id', ParseIntPipe) id: number) {
     return this.petsService.removePet(id);
   }
 }
