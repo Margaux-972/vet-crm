@@ -63,8 +63,22 @@ export class ClientsService {
   }
 
   async createClient(createClientDto: CreateClientDto) {
+    const { pets, ...clientData } = createClientDto;
+
     return this.prisma.client.create({
-      data: createClientDto,
+      data: {
+        ...clientData,
+
+        pet:
+          pets && pets.length > 0
+            ? {
+                create: pets,
+              }
+            : undefined,
+      },
+      include: {
+        pet: true,
+      },
     });
   }
 
