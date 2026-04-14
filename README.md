@@ -19,7 +19,7 @@ Backend du CRM pour cabinet vétérinaire développé avec NestJS et Prisma.
 
 ---
 
-## 🧩 Modèle de données
+## Modèle de données
 
 ### Client (propriétaire)
 
@@ -41,14 +41,14 @@ Backend du CRM pour cabinet vétérinaire développé avec NestJS et Prisma.
 
 ---
 
-## 🔗 Relation
+## Relation
 
 Un client peut avoir plusieurs animaux  
 Un animal appartient à un seul client
 
 ---
 
-## ⚙️ Installation
+## Installation
 
 ```bash
 npm install
