@@ -52,4 +52,5 @@ Un animal appartient à un seul client
 
 ```bash
 npm install
+npm run start:dev
 ```
